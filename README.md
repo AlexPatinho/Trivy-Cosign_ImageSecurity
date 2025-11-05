@@ -54,6 +54,8 @@ Este entorno demuestra cómo fortalecer la **cadena de suministro de software (S
 | **m2** | 192.168.56.115 | Worker | Nodo secundario destinado al despliegue de pods de prueba y validación de imágenes firmadas. |
 | **m3** | 192.168.56.116 | Worker | Nodo de pruebas para ejecución de pods con Connaisseur y validación final de imágenes firmadas. |
 
+![Trivy-Cosign_ImageSecurity](images/nodos.jpg)
+
 ---
 
 ## 📂 Estructura de Directorios
