@@ -9,3 +9,9 @@
 #### Prerrequisitos (ejemplo en Rocky/CentOS/Fedora)
 ```bash
 sudo dnf -y install wget git tar curl
+```
+
+Instalar y habilitar Docker o Podman
+```bash
+sudo dnf install -y docker
+sudo systemctl enable --now docker
