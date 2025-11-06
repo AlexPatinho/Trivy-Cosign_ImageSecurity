@@ -92,8 +92,9 @@ trivy image redis:latest \
   --scanners vuln --timeout 10m \
   --format json -o /root/trivy-report-redis.json
 ```
+---
 
-### 4️⃣ Generar reportes profesionales (JSON + HTML)
+### 5️⃣ Script para escanear imágenes manualmente
 Guarda el siguiente script en **/usr/local/bin/scan-image.sh**
 ```bash
 sudo tee /usr/local/bin/scan-image.sh >/dev/null <<'EOF'
@@ -143,8 +144,78 @@ sudo chmod +x /usr/local/bin/scan-image.sh
 ```
 
 #### Ejemplos
-**Escaneo simple**
+**Ejemplo 1: Escaneo simple**
 ```bash
 sudo /usr/local/bin/scan-image.sh redis:latest
 ```
 ![escaneo_simple](Script_escaneo_manual/images/ejemplo1.png)
+
+**Ejemplo 2: Mismo escaneo, pero guardando en otro directorio**
+```bash
+sudo /usr/local/bin/scan-image.sh nginx:latest /root/trivy-reports
+```
+![escaneo_en_diferente_directorio](Script_escaneo_manual/images/ejemplo2.png)
+
+**Ejemplo 3: Usando la DB ya descargada (más rápido en repeticiones)**
+```bash
+sudo /usr/local/bin/scan-image.sh alpine:latest /root/reports --skip-db-update
+```
+![escaneo_usando_db](Script_escaneo_manual/images/ejemplo3.png)
+
+**Verificaciónd e salidas**
+```bash
+ls -lh /root/reports/*.html /root/reports/*.json 2>/dev/null || true
+ls -lh /root/trivy-reports/*.html /root/trivy-reports/*.json 2>/dev/null || true
+```
+![salidas](Script_escaneo_manual/images/verificacion_salidas.png)
+
+---
+
+### Ejemplo: Escaneo de Redis
+Ejecutando un escaneo con filtros de severidad:
+```bash
+trivy image redis:latest --scanners vuln --timeout 5m --severity HIGH,CRITICAL
+```
+
+Se encontraron 5 vulnerabilidades conocidas en los paquetes del sistema base.
+
+---
+
+## TABLA DE NIVELES DE SEVERIDAD
+
+| Nivel | Color en el reporte | Descripción técnica | Recomendación práctica |
+| :---: | :---: | :--- | :--- |
+| **🟥 CRITICAL** | Rojo | Vulnerabilidades explotables de forma inmediata. Permiten ejecución remota de código, escalamiento de privilegios o fuga crítica de datos. | 🚨 **Debe corregirse de inmediato.** Actualiza la imagen o aplica parches antes de desplegar. |
+| **🟧 HIGH** | Naranja | Fallos graves que pueden comprometer la seguridad, aunque requieran condiciones específicas o usuario local. | ⚠️ **Prioridad alta:** Mitigar o reemplazar la imagen tan pronto como sea posible. |
+| **🟨 MEDIUM** | Amarillo | Problemas moderados: pueden revelar información o afectar estabilidad si se cumplen ciertas condiciones. | ⚙️ Planifica parcheo o revisión en el siguiente ciclo de mantenimiento. |
+| **🟦 LOW** | Azul / gris | Riesgo bajo o difícil de explotar. Generalmente no afecta a la seguridad directamente. | 🕐 Puede posponerse, pero conviene monitorizar. |
+| **⚫ UNKNOWN** | Gris claro | Trivy detectó un CVE, pero no hay datos suficientes o el proveedor no asignó severidad. | 🔍 Revisa manualmente el CVE o consulta la base NVD/CVSS. |
+
+### Mapeo de Severidad (CVSS a Trivy)
+
+Trivy utiliza las bases de datos **CVE** y **CVSS** (Common Vulnerability Scoring System). Cada CVE tiene una puntuación del 0 al 10, y Trivy lo mapea de la siguiente manera:
+
+| CVSS Base Score | Severidad Trivy |
+| :---: | :---: |
+| 9.0 – 10.0 | **CRITICAL** |
+| 7.0 – 8.9 | **HIGH** |
+| 4.0 – 6.9 | **MEDIUM** |
+| 0.1 – 3.9 | **LOW** |
+| N/A | **UNKNOWN** |
+
+### Campos principales del reporte
+
+* **Library**: paquete afectado.
+* **CVE**: identificador público.
+* **Status**: estado del paquete (`affected`, `will_not_fix`).
+* **Fixed Version**: versión corregida.
+* **Title**: resumen del impacto o ataque posible.
+
+---
+
+## 🧠 Buenas prácticas de mitigación
+
+* **🔄 Actualizar** las imágenes base con frecuencia.
+* **🧱 Reconstruir** y reescanear antes de desplegar.
+* **🔏 Implementar** políticas de firma (**Cosign** + **Connaisseur**).
+* **🧪 Automatizar** el escaneo en pipelines **CI/CD**.
