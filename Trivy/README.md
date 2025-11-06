@@ -1,6 +1,6 @@
 # 🛡️ Trivy — Escáner de Vulnerabilidades
 
-
+![escaneo_trivy](/images/trivy.jpg)
 
 ## ⚙️ Guía de Instalación de Trivy
 
@@ -95,14 +95,13 @@ trivy image redis:latest \
 
 ### 4️⃣ Generar reportes profesionales (JSON + HTML)
 Guarda el siguiente script en **/usr/local/bin/scan-image.sh**
-
+```bash
 sudo tee /usr/local/bin/scan-image.sh >/dev/null <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
 # Uso: scan-image.sh <imagen[:tag]> [directorio_salida] [opciones_trivy...]
 # Ejemplo: scan-image.sh nginx:latest /root/reports --skip-db-update
-```bash
 img="${1:-}"
 outdir="${2:-/root/reports}"
 shift || true
@@ -142,5 +141,6 @@ EOF
 ```
 sudo chmod +x /usr/local/bin/scan-image.sh
 ```
+
 
 
