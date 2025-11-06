@@ -142,5 +142,9 @@ EOF
 sudo chmod +x /usr/local/bin/scan-image.sh
 ```
 
-
-
+#### Ejemplos
+**Escaneo simple**
+```bash
+sudo /usr/local/bin/scan-image.sh redis:latest
+```
+![escaneo_simple](Script_escaneo_manual/images/ejemplo1.png)
