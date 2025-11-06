@@ -178,6 +178,7 @@ trivy image redis:latest --scanners vuln --timeout 5m --severity HIGH,CRITICAL
 ```
 
 Se encontraron 5 vulnerabilidades conocidas en los paquetes del sistema base.
+![salidas](Script_escaneo_manual/images/escaneo.png)
 
 ---
 
@@ -219,3 +220,4 @@ Trivy utiliza las bases de datos **CVE** y **CVSS** (Common Vulnerability Scorin
 * **🧱 Reconstruir** y reescanear antes de desplegar.
 * **🔏 Implementar** políticas de firma (**Cosign** + **Connaisseur**).
 * **🧪 Automatizar** el escaneo en pipelines **CI/CD**.
+
