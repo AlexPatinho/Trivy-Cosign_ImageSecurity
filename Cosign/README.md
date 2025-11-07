@@ -1,7 +1,7 @@
 # 🧾 Cosign
 Cosign es una herramienta de **Sigstore** que simplifica la firma y verificación de contenedores y otros artefactos de software. Es esencial para la implementación de políticas de seguridad en pipelines CI/CD y entornos de Kubernetes.
 
-![Cosign](images/cosign paso a paso.jpg)
+![Cosign](images/cosign_paso_a_paso.jpg)
 
 ---
 
