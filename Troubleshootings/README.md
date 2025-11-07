@@ -4,6 +4,127 @@ Este documento recopila los problemas más comunes encontrados durante la implem
 
 ---
 
+# 1. Problemas comunes con Trivy
+
+## 1.1. Error: “FATAL database initialization error”
+
+### 📋 Síntoma
+Trivy no logra actualizar o descargar la base de datos de vulnerabilidades (DB).
+
+### 🔍 Causa Probable
+* Falta de conexión a internet o un *proxy* corporativo bloqueando la descarga de la base de datos.
+* Cache local corrupto en `~/.cache/trivy`.
+
+### 🛠️ Solución
+
+1.  **Borra la caché local (cache corrupto):**
+    ```bash
+    rm -rf ~/.cache/trivy
+    ```
+
+2.  **Fuerza una actualización manual de la base:**
+    ```bash
+    trivy --download-db-only
+    ```
+
+3.  **Si hay un proxy corporativo, configura las variables de entorno:**
+    ```bash
+    export HTTP_PROXY=http://proxy:8080
+    export HTTPS_PROXY=http://proxy:8080
+    ```
+    (Reemplaza la dirección y puerto del proxy según sea necesario).
+
+### ✨ Prevención
+Actualizar la base de datos regularmente con un cron diario o asegurar la actualización en cada ejecución del *pipeline* CI/CD.
+
+## 1.2. Reportes vacíos o sin vulnerabilidades
+
+### 📋 Síntoma
+El reporte HTML se genera, pero no muestra resultados de vulnerabilidades.
+
+### 🔍 Causa Probable
+* La imagen base no contiene binarios ni información de paquetes analizables (común en imágenes **"distroless"**).
+* Escaneo incompleto o se usó la opción `--skip-db-update` en el primer análisis.
+
+### 🛠️ Solución
+1.  **Asegura usar un *tag* válido y accesible (ejemplo):**
+    ```bash
+    trivy image nginx:latest
+    ```
+2.  **No usar `--skip-db-update`** en el primer análisis o si sabes que la base de datos está obsoleta.
+3.  Valida que la imagen tenga un sistema de archivos tradicional (usa bases como `alpine`, `ubuntu`, `debian`, etc.).
+
+### ✨ Prevención
+Evitar el uso de imágenes **“distroless”** sin empaquetado de paquetes del sistema, ya que generalmente no generan datos útiles de vulnerabilidades para Trivy (aunque son más seguras por la reducción de superficie de ataque).
+
+---
+
+# 2. Problemas comunes con Cosign
+
+## 2.1. Error: “no matching signatures” o “missing signature”
+
+### 📋 Síntoma
+Cosign no puede encontrar una firma asociada a la imagen cuando se intenta verificar.
+
+### 🔍 Causa Probable
+* La imagen fue firmada con un *tag* o *digest* diferente al que se está verificando.
+* El archivo de firma (`.sig`) no se subió correctamente al registro después del comando `cosign sign`.
+* La clave pública (`cosign.pub`) utilizada para la verificación no corresponde al par de claves privada (`cosign.key`) que se usó para firmar.
+
+### 🛠️ Solución
+
+1.  **Verifica el *digest* (resumen criptográfico) exacto de la imagen:**
+    ```bash
+    podman inspect IMAGE | grep -i digest
+    ```
+
+2.  **Firma la imagen usando el *digest* en lugar del *tag*** (si no lo hiciste la primera vez). Asegúrate de reemplazar `<digest>` con el valor obtenido en el paso anterior:
+    ```bash
+    cosign sign --key cosign.key 192.168.56.114:5000/demo/nginx@sha256:<digest>
+    ```
+
+3.  **Confirma que los archivos `.sig` se han subido al registro local** (reemplaza la IP si es necesario):
+    ```bash
+    curl -X GET [http://192.168.56.114:5000/v2/_catalog](http://192.168.56.114:5000/v2/_catalog)
+    ```
+    *(Nota: El comando anterior solo lista repositorios, una verificación más exhaustiva puede requerir inspeccionar el manifiesto del repositorio específico).*
+
+### ✨ Prevención
+* Mantener **consistencia de *tags*** o usar **siempre la firma por *digest*** (`@sha256:`) para evitar ambigüedades.
+* Guardar copias de respaldo de las claves generadas con `cosign generate-key-pair`.
+
+## 2.2. Error: “permission denied” o “no space left on device”
+
+### 📋 Síntoma
+Cosign no puede escribir o subir la firma al registro, o no puede escribir archivos temporales necesarios.
+
+### 🔍 Causa Probable
+* **Permisos incorrectos:** El usuario que ejecuta Cosign o el servicio de registro no tiene permisos de escritura en directorios críticos como `/etc/containerd` o `/var/lib/registry`.
+* **Disco lleno:** El disco donde se encuentra el registro o el directorio de *storage* del contenedor está lleno.
+
+### 🛠️ Solución
+
+1.  **Verifica y corrige los permisos** (si el registro está en `/var/lib/registry`):
+    ```bash
+    sudo chmod -R 755 /var/lib/registry
+    ```
+    *(Asegúrate de que el usuario del proceso del registro tenga la propiedad o permisos necesarios).*
+
+2.  **Revisa el espacio disponible en el disco:**
+    ```bash
+    df -h
+    ```
+
+3.  **Elimina imágenes antiguas o innecesarias** (si usas Podman/Docker localmente y el error es en la escritura local):
+    ```bash
+    podman rmi $(podman images -q)
+    ```
+    *(Si el registro está lleno, necesitas usar la API o una herramienta de recolección de basura del registro para liberar espacio).*
+
+---
+
+# 3. Problemas comunes con Connaisseur
+
 ## 3.1. Error: “failed calling webhook ... x509: certificate signed by unknown authority”
 
 ### 📋 Síntoma
