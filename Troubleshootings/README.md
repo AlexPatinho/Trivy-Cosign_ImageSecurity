@@ -154,8 +154,6 @@ Kubernetes no puede validar el webhook de Connaisseur.
 * Mantener respaldos de la CA (`ca.crt`).
 * Actualizar el webhook cada vez que se regeneren certificados TLS.
 
----
-
 ## 3.2. Error: “no matching signatures” o “invalid trust root”
 
 ### 📋 Síntoma
@@ -179,8 +177,6 @@ El webhook rechaza imágenes que deberían estar correctamente firmadas.
 * Usar nombres consistentes en las imágenes firmadas.
 * Mantener una única clave pública (`cosign.pub`) por entorno para la verificación.
 
----
-
 ## 3.3. Error: “connection refused” o “context deadline exceeded”
 
 ### 📋 Síntoma
@@ -203,8 +199,6 @@ Los *pods* del clúster no pueden comunicarse con el webhook.
 ### ✨ Prevención
 * Evitar modificar manualmente los puertos del servicio.
 * Realizar *snapshots* del entorno antes de aplicar cambios a la infraestructura de red o servicios.
-
----
 
 ## 3.4. Error: “CrashLoopBackOff” en pods de Connaisseur
 
@@ -231,8 +225,6 @@ El *pod* entra en un ciclo de reinicios constantes.
 
 ### ✨ Prevención
 * No modificar directamente los `command` o `args` del *pod* principal. Si se requiere usar `uvicorn` o similares, hacerlo en una capa de pruebas separada.
-
----
 
 ## 3.5. Error: “unable to verify the first certificate” (en test TLS)
 
