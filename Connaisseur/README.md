@@ -164,6 +164,8 @@ El webhook de Connaisseur deniega la creación del Pod con un error como:
 `error validating image: [no matching signatures ... missing "dev.cosignproject.cosign/signature" annotation]`
 El Pod no se crea porque la imagen no tiene una firma digital válida.
 
+![imagen_rechazada](images/falla.png)
+
 ### ✅ Imagen firmada (debe ser aceptada)
 ```bash
 cat >/root/connaisseur/ok-signed.yaml <<'EOF'
@@ -192,3 +194,5 @@ kubectl get pod ok-signed -w
 Connaisseur valida la firma digital con la clave pública configurada en el values.yaml.
 El Pod pasa al estado Running correctamente:
 `ok-signed 0/1 ContainerCreating → 1/1 Running`
+
+![imagen_aceptada](images/aceptada.png)
