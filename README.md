@@ -67,8 +67,16 @@ Este entorno demuestra cómo fortalecer la **cadena de suministro de software (S
 | `/root/reports/` | Guarda los reportes de vulnerabilidades generados por Trivy (HTML y JSON). |
 | `/root/connaisseur/tests/` | Contiene los manifiestos de prueba: `fail-unsigned.yaml` y `ok-signed.yaml`. |
 
----
-
-
 > 💡 **Nota:** Este repositorio es parte de un entorno educativo orientado a la implementación práctica de medidas de seguridad en la cadena de suministro de software mediante herramientas open source.
 
+---
+
+## Referencias
+- Sigstore. (s. f.). Sigstore Quickstart with Cosign. https://docs.sigstore.dev/quickstart/quickstart-cosign/
+- Aqua Security. (s. f.). Trivy Documentation. Recuperado de https://aquasecurity.github.io/trivy/v0.56
+- Sigstore. (s. f.). Cosign Documentation. Recuperado de https://docs.sigstore.dev/cosign/
+- SSE Secure Systems. (s. f.). Connaisseur — Verify Container Image Signatures in Kubernetes Clusters. Recuperado de https://sse-secure-systems.github.io/connaisseur/v2.5.3/
+- The Hacker Way. (2022, 5 mayo). «DevSecOps y detección de vulnerabilidades con Trivy». The Hacker Way. Recuperado de https://thehackerway.es/2022/05/05/devsecops-y-deteccion-de-vulnerabilidades-con-trivy/
+- Keyfactor, Equipo técnico. (2023, 26 enero). Protección de contenedores con SignServer y Cosign. Keyfactor Blog. Recuperado de https://www.keyfactor.com/es/blog/securing-containers-with-signserver-and-cosign/
+- Trivy / Cosign Team. (n.d.). Cosign Vulnerability Scan Record. In Trivy Documentation. Retrieved [date], from https://trivy.dev/v0.67/docs/supply-chain/attestation/vuln/
+- ASCIT Group. (2023, 26 septiembre). «Trivy: Escáner de seguridad versátil para contenedores y más». ASCIT Group. Recuperado de https://www.ascitgroup.com/2023/09/26/trivy-escaner-de-seguridad-versatil-para-contenedores-y-mas/
