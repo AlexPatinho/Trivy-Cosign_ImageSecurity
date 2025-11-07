@@ -160,7 +160,7 @@ kubectl apply -f /root/connaisseur/fail-unsigned.yaml
 ```
 
 **Resultado esperado:**
-- El webhook de Connaisseur deniega la creación del Pod con un error como:
+El webhook de Connaisseur deniega la creación del Pod con un error como:
 `error validating image: [no matching signatures ... missing "dev.cosignproject.cosign/signature" annotation]`
 El Pod no se crea porque la imagen no tiene una firma digital válida.
 
