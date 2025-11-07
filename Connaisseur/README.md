@@ -3,6 +3,7 @@
 Esta guía detalla la instalación del *Admission Webhook* **Connaisseur** en Kubernetes para forzar la validación de firmas digitales de imágenes (usando **Cosign**) provenientes de un registro privado e inseguro (`192.168.56.114:5000`).
 
 **Diagrama esperado para Cosign y Connaisseur.**
+
 ![Trivy-Cosign_ImageSecurity](/images/cosign.jpg)
 
 ---
@@ -137,5 +138,57 @@ kubectl -n connaisseur logs deploy/connaisseur --tail=50
 
 ## 🧪 Pruebas de validación
 ### ❌ Imagen sin firmar (debe fallar)
+```bash
+cat >/root/connaisseur/fail-unsigned.yaml <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+name: fail-unsigned
+namespace: default
+spec:
+containers:
 
+name: c
+image: 192.168.56.114:5000/demo/nginx:1.26
+imagePullPolicy: IfNotPresent
+EOF
+```
 
+Aplicar el manifiesto:
+```bash
+kubectl apply -f /root/connaisseur/fail-unsigned.yaml
+```
+
+**Resultado esperado:**
+- El webhook de Connaisseur deniega la creación del Pod con un error como:
+`error validating image: [no matching signatures ... missing "dev.cosignproject.cosign/signature" annotation]`
+El Pod no se crea porque la imagen no tiene una firma digital válida.
+
+### ✅ Imagen firmada (debe ser aceptada)
+```bash
+cat >/root/connaisseur/ok-signed.yaml <<'EOF'
+apiVersion: v1
+kind: Pod
+metadata:
+name: ok-signed
+namespace: default
+spec:
+nodeName: m3
+containers:
+
+name: c
+image: 192.168.56.114:5000/demo/nginx-ok@sha256:380f6eda6aca3bbc82ca52b88d7e3a46f6aa6bb5b0559a21a2c4379e66115833
+imagePullPolicy: IfNotPresent
+EOF
+```
+
+Aplicar el manifiesto y verificar:
+```bash
+kubectl apply -f /root/connaisseur/ok-signed.yaml
+kubectl get pod ok-signed -w
+```
+
+**Resultado esperado:**
+Connaisseur valida la firma digital con la clave pública configurada en el values.yaml.
+El Pod pasa al estado Running correctamente:
+`ok-signed 0/1 ContainerCreating → 1/1 Running`
