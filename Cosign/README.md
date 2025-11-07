@@ -118,7 +118,7 @@ Verifica que el contenedor esté ejecutándose correctamente:
 sudo podman ps --filter "name=registry"
 ```
 
-## B) Configurar Containerd para Permitir "Plain HTTP"
+### B) Configurar Containerd para Permitir "Plain HTTP"
 ```
 sudo mkdir -p /etc/containerd/certs.d/192.168.56.114:5000
 
@@ -138,7 +138,7 @@ Comprobación:
 crictl info | grep -A2 "config_path"
 ```
 
-## C) Generar el par de claves (privada/pública)
+### C) Generar el par de claves (privada/pública)
 ```
 mkdir -p /root/cosign
 cd /root/cosign
@@ -152,7 +152,7 @@ ls -lh /root/cosign/
 openssl rsa -in /root/cosign/cosign.key -check
 ```
 
-## D) Preparar imágenes de prueba en el registro local
+### D) Preparar imágenes de prueba en el registro local
 **NGINX**
 ```
 sudo podman pull docker.io/library/nginx:1.25
@@ -160,4 +160,98 @@ sudo podman tag docker.io/library/nginx:1.25 192.168.56.114:5000/demo/nginx:1.25
 sudo podman push --tls-verify=false 192.168.56.114:5000/demo/nginx:1.25
 ```
 
-Se generarán los archivos cosign.key (privada) y cosign.pub (pública).
+**ALPINE**
+```
+sudo podman pull docker.io/library/alpine:3.18
+sudo podman tag docker.io/library/alpine:3.18 192.168.56.114:5000/demo/alpine:3.18
+sudo podman push --tls-verify=false 192.168.56.114:5000/demo/alpine:3.18
+```
+
+**REDIS**
+```
+sudo podman pull docker.io/library/redis:7.2
+sudo podman tag docker.io/library/redis:7.2 192.168.56.114:5000/demo/redis:7.2
+sudo podman push --tls-verify=false 192.168.56.114:5000/demo/redis:7.2
+```
+
+Verificar que el registro las detecte:
+```
+curl http://192.168.56.114:5000/v2/_catalog
+curl http://192.168.56.114:5000/v2/demo/nginx/tags/list
+```
+
+### E) Firmar imágenes con Cosign (clave local)
+**NGINX**
+```
+COSIGN_PASSWORD="" cosign sign --key /root/cosign/cosign.key \
+  192.168.56.114:5000/demo/nginx:1.25
+```
+
+**ALPINE**
+```
+COSIGN_PASSWORD="" cosign sign --key /root/cosign/cosign.key \
+  192.168.56.114:5000/demo/alpine:3.18
+```
+
+**REDIS**
+```
+COSIGN_PASSWORD="" cosign sign --key /root/cosign/cosign.key \
+  192.168.56.114:5000/demo/redis:7.2
+```
+
+Cosign generará firmas OCI en el mismo registro.
+Puedes verlas con `curl -s http://192.168.56.114:5000/v2/demo/redis/tags/list.`
+
+### F) Verificar firmas con la clave pública
+```
+cosign verify --key /root/cosign/cosign.pub \
+  192.168.56.114:5000/demo/nginx:1.25 --verbose
+```
+```
+cosign verify --key /root/cosign/cosign.pub \
+  192.168.56.114:5000/demo/alpine:3.18 --verbose
+```
+```
+cosign verify --key /root/cosign/cosign.pub \
+  192.168.56.114:5000/demo/redis:7.2 --verbose
+```
+
+Si la imagen no está firmada, Cosign mostrará:
+`error: no matching signatures`
+
+---
+
+## 🧩 Ejemplo: Firmar imagen manualmente
+```bash
+echo "=== Antes de firmar ==="
+cosign verify --key /root/cosign/cosign.pub 192.168.56.114:5000/demo/redis:7.2 || echo "❌ No firmada todavía"
+
+echo "=== Firmando imagen ==="
+COSIGN_PASSWORD="" cosign sign --key /root/cosign/cosign.key 192.168.56.114:5000/demo/redis:7.2
+
+echo "=== Verificando después de firmar ==="
+cosign verify --key /root/cosign/cosign.pub 192.168.56.114:5000/demo/redis:7.2
+```
+
+Mostrar tags y artefactos generados:
+```
+curl -s http://192.168.56.114:5000/v2/demo/redis/tags/list | jq
+```
+
+---
+
+## 🧠 Comandos adicionales útiles
+Mostrar contenido de firma:
+```
+cosign verify --key /root/cosign/cosign.pub 192.168.56.114:5000/demo/nginx:1.25 --output text
+```
+
+Exportar clave pública en base64 (útil para Connaisseur)
+```
+base64 -w0 /root/cosign/cosign.pub
+```
+
+Verificar integridad de clave privada
+```
+openssl rsa -in /root/cosign/cosign.key -check
+```
