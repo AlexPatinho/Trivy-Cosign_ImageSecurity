@@ -199,6 +199,8 @@ COSIGN_PASSWORD="" cosign sign --key /root/cosign/cosign.key \
   192.168.56.114:5000/demo/redis:7.2
 ```
 
+![Firma_imagenes](images/imagenes_firmadas.png)
+
 Cosign generará firmas OCI en el mismo registro.
 Puedes verlas con `curl -s http://192.168.56.114:5000/v2/demo/redis/tags/list.`
 
@@ -207,14 +209,19 @@ Puedes verlas con `curl -s http://192.168.56.114:5000/v2/demo/redis/tags/list.`
 cosign verify --key /root/cosign/cosign.pub \
   192.168.56.114:5000/demo/nginx:1.25 --verbose
 ```
+![Firma_imagenes](images/firma_nginx.png)
+
 ```
 cosign verify --key /root/cosign/cosign.pub \
   192.168.56.114:5000/demo/alpine:3.18 --verbose
 ```
+![Firma_imagenes](images/firma_alpine.png)
+
 ```
 cosign verify --key /root/cosign/cosign.pub \
   192.168.56.114:5000/demo/redis:7.2 --verbose
 ```
+![Firma_imagenes](images/firma_redis.png)
 
 Si la imagen no está firmada, Cosign mostrará:
 `error: no matching signatures`
