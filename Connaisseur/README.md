@@ -2,6 +2,9 @@
 
 Esta guía detalla la instalación del *Admission Webhook* **Connaisseur** en Kubernetes para forzar la validación de firmas digitales de imágenes (usando **Cosign**) provenientes de un registro privado e inseguro (`192.168.56.114:5000`).
 
+**Diagrama esperado para Cosign y Connaisseur.**
+![Trivy-Cosign_ImageSecurity](/images/cosign.jpg)
+
 ---
 
 ## 🧭 Instalación de Helm y Preparación de Repositorios
@@ -126,9 +129,13 @@ kubectl -n connaisseur logs deploy/connaisseur --tail=50
 ```
 
 ### ESTRUCTURA SUGERIDA DE ARCHIVOS
-``
 - /root/connaisseur → values.yaml (configuración principal del Helm Chart)
 - /root/cosign → cosign.key, cosign.pub (claves de firma Cosign)
 - /root/connaisseur/tests → fail-unsigned.yaml, ok-signed.yaml (manifiestos de prueba)
-``
+
+---
+
+## 🧪 Pruebas de validación
+### ❌ Imagen sin firmar (debe fallar)
+
 
